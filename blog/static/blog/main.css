@@ -73,10 +73,12 @@ vertical-align: middle;
 }
 
 .account-img {
-height: 150px;
-width: 150px;
-margin-right: 20px;
-margin-bottom: 16px;
+    height: 150px;
+    width: 150px;
+    margin-right: 20px;
+    margin-bottom: 16px;
+    object-fit: cover; /* This ensures the image covers the entire circle */
+    border-radius: 50%; /* Makes it a circle */
 }
 
 .account-heading {
