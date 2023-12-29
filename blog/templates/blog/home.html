@@ -6,13 +6,30 @@
             <div class="flex-grow-1 ms-3">
             <div class="article-metadata d-flex justify-content-between">
                 <div>
-                    <a class="mr-2" href="#">{{ post.author }}</a>
+                    <a class="mr-2" href="{% url 'another_user-profile' post.author %}">{{ post.author }}</a>
                 </div>
                 <small class="text-muted" style="text-align: right;">{{post.date_posted|date:"F d, Y"}}</small>
               </div>
-                <h2><a class="article-title" href="#">{{ post.title }}</a></h2>
-              <p class="article-content">{{ post.content }}</p>
+                <h2><a class="article-title" href="{% url 'blog-detail' post.title %}">{{ post.title }}</a></h2>
+                <p class="article-content">{{ post.stripped_content }}</p><small class="text-muted"><a href="{% url 'blog-detail' post.title %}">Read More...</a></small>
             </div>
           </article>
     {% endfor %}
+    {% if posts.has_previous %}
+      <a class="btn btn-outline-info mb-4" href="{% url 'blog-home' 1 %}">first</a>
+      <a class="btn btn-outline-info mb-4" href="{% url 'blog-home' posts.previous_page_number %}">previous</a>
+    {% endif %}
+
+    {% for num in posts.paginator.page_range %}
+      {% if posts.number == num %}
+        <a class="btn btn-info mb-4" href="{% url 'blog-home' num %}">{{num}}</a>
+      {% elif num > posts.number|add:'-3' and num < posts.number|add:'3' %}
+        <a class="btn btn-outline-info mb-4" href="{% url 'blog-home' num %}">{{num}}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if posts.has_next %}
+      <a class="btn btn-outline-info mb-4" href="{% url 'blog-home' posts.next_page_number %}">next</a>
+      <a class="btn btn-outline-info mb-4" href="{% url 'blog-home' posts.paginator.num_pages %}">last</a>
+    {% endif %}
 {% endblock content %}

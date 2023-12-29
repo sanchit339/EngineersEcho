@@ -1,0 +1,48 @@
+{%extends 'blog/base.html'%}
+{%block content%}
+    <div class="content-section">
+        <div class="media">
+            <img class="rounded-circle account-img" src="{{ other_user.profile.image.url }}">
+            <div class="media-body">
+                <h2 class="account-heading">{{ other_user.username }}</h2>
+            </div>
+        </div>
+    </div>
+    <h3>Posts: </h3>
+    {% for post in posts %}
+        <article class="d-flex align-items-center content-section">
+        <div class="flex-shrink-0"><img class="rounded-circle article-img " src = "{{ post.author.profile.image.url }}"></div>
+        <div class="flex-grow-1 ms-3">
+            <div class="article-metadata d-flex justify-content-between">
+            <div>
+                {% if post.author == user %}
+                    <a href="{% url 'profile' %}">{{ post.author }}</a>
+                {% else %}
+                    <a href="{% url 'another_user-profile' post.author %}">{{ post.author }}</a>
+                {% endif %}
+            </div>
+            <small class="text-muted" style="text-align: right;">{{post.date_posted|date:"F d, Y"}}</small>
+            </div>
+            <h2><a class="article-title" href="{% url 'blog-detail' post.title %}">{{ post.title }}</a></h2>
+            <p class="article-content">{{ post.stripped_content }}</p><small class="text-muted"><a href="{% url 'blog-detail' post.title %}">Read More...</a></small>
+        </div>
+        </article>
+    {% endfor %}
+    {% if posts.has_previous %}
+      <a class="btn btn-outline-info mb-4" href="{% url 'another_user_profilee' data=other_user.username pageno=1 %}">first</a>
+      <a class="btn btn-outline-info mb-4" href="{% url 'another_user_profilee' data=other_user.username pageno=posts.previous_page_number %}">previous</a>
+    {% endif %}
+
+    {% for num in posts.paginator.page_range %}
+      {% if posts.number == num %}
+        <a class="btn btn-info mb-4" href="{% url 'another_user_profilee' other_user.username num %}">{{num}}</a>
+      {% elif num > posts.number|add:'-3' and num < posts.number|add:'3' %}
+        <a class="btn btn-outline-info mb-4" href="{% url 'another_user_profilee' data=other_user.username pageno=num %}">{{num}}</a>
+      {% endif %}
+    {% endfor %}
+
+    {% if posts.has_next %}
+      <a class="btn btn-outline-info mb-4" href="{% url 'another_user_profilee' data=other_user.username pageno=posts.next_page_number %}">next</a>
+      <a class="btn btn-outline-info mb-4" href="{% url 'another_user_profilee' data=other_user.username pageno=posts.paginator.num_pages %}">last</a>
+    {% endif %}
+{%endblock content%}

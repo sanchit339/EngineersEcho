@@ -1,0 +1,18 @@
+{% extends 'blog/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <div class="content-section">
+        <form action = "{% url 'blog-create' %}" method="post">
+            {% csrf_token %}
+            <fieldset class="mb-3">
+                <legend class="border-bottom mb-4">New Blog</legend>
+                {{form|crispy}}
+            </fieldset>
+
+            <div class="mb-3">
+                <button class="btn btn-success" type="submit" onsubmit="">Create</button>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

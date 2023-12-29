@@ -1,0 +1,20 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+    <article class="d-flex align-items-center content-section">
+        <div class="flex-shrink-0"><img class="rounded-circle article-img " src = "{{ post.author.profile.image.url }}"></div>
+        <div class="flex-grow-1 ms-3">
+        <div class="article-metadata d-flex justify-content-between">
+            <div>
+            </div>
+            <small class="text-muted" style="text-align: right;">{{post.date_posted|date:"F d, Y"}}</small>
+        </div>
+        <h2 class="article-title">{{ post.title }}</a></h2>
+        <p class="article-content">{{ post.content }}</p>
+        {% if post.author == user %}
+            <a class="btn btn-secondary" href="{% url 'blog-update' post.title %}">Update Post</a>
+            <a class="btn btn-danger" href="{% url 'blog-delete' post.title %}">Delete Post</a>
+        {% endif %}
+        </div>
+    </article>
+{% endblock content %}

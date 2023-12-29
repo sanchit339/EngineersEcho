@@ -73,14 +73,25 @@ vertical-align: middle;
 }
 
 .account-img {
-    height: 150px;
-    width: 150px;
+    height: 175px;
+    width: 175px;
     margin-right: 20px;
     margin-bottom: 16px;
-    object-fit: cover; /* This ensures the image covers the entire circle */
-    border-radius: 50%; /* Makes it a circle */
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .account-heading {
 font-size: 2.5rem;
 }
+
+  .btn-primary-custom {
+    color: #333333; /* Gray color for the text */
+    background-color: #4caf50;
+    border: none;
+      transition: color 0.3s;
+  }
+
+  .btn-primary-custom:hover {
+    color: #ffffff; /* White color on hover */
+  }

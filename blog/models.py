@@ -7,6 +7,7 @@ from django.utils import timezone
 class Post(models.Model):
     title = models.CharField(max_length=200 , default='')
     content = models.TextField(default='')
+    stripped_content = models.TextField(default='.')
     date_posted = models.DateTimeField(default=timezone.now)
     author = models.ForeignKey(User, on_delete=models.CASCADE , default=1)
 
