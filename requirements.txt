@@ -18,4 +18,4 @@ sqlparse
 tzdata
 urllib3
 whitenoise
-dotenv
+python-dotenv
