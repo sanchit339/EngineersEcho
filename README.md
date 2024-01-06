@@ -44,8 +44,8 @@ The EngineersEcho is a dynamic full-stack blog website developed using Django, H
    ```bash
    python manage.py runserver
 
-## Deployment
-    Follow the deployment guide in the DEPLOYMENT.md file for deploying the website on a production server.
+## Deployment Guide
+   Went through [Code with Harry](https://www.codewithharry.com/blogpost/django-deploy-nginx-gunicorn/) and [DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-set-up-django-with-postgres-nginx-and-gunicorn-on-ubuntu-22-04) Blogs for the Deployment 
 
 ## Issues and Contributions
    If you encounter any issues or have suggestions for improvement, please open an issue on GitHub. Contributions are welcome!
