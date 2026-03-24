@@ -225,7 +225,6 @@ INSTALLED_APPS = [
     # third-party
     'crispy_forms',
     'crispy_bootstrap5',
-    'storages',
 ]
 ```
 
@@ -409,24 +408,26 @@ python manage.py collectstatic
 
 ### media files (user uploads)
 
-**development:**
+**current setup (local storage):**
 ```python
 # settings.py
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# user uploads go to:
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+}
+
+# uploads go to:
 media/profile_pics/image.jpg
 ```
 
-**production (your setup):**
-```python
-# settings.py
-AWS_STORAGE_BUCKET_NAME = "engineersecho"
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
-# uploads go to S3
-```
+**in Docker:**
+- media files stored in `media_data` volume
+- persisted across container restarts
+- served by Nginx from the shared volume
 
 ---
 
@@ -796,16 +797,26 @@ def post_create(request):
 
 ### before deploying:
 
-- [ ] `DEBUG = False`
-- [ ] set `ALLOWED_HOSTS`
-- [ ] use environment variables for secrets
-- [ ] use strong `SECRET_KEY`
-- [ ] use real database (not SQLite)
-- [ ] `collectstatic` for static files
-- [ ] configure email backend
-- [ ] set up error logging
-- [ ] enable HTTPS
-- [ ] configure CSRF/CORS if needed
+- [x] `DEBUG = False` (reads from env var)
+- [x] set `ALLOWED_HOSTS` (reads from env var)
+- [x] use environment variables for secrets (.env file)
+- [x] use strong `SECRET_KEY` (reads from env var)
+- [x] use PostgreSQL (not SQLite)
+- [x] `collectstatic` for static files (runs in Dockerfile)
+- [x] configure email backend (Gmail SMTP via env vars)
+- [x] set up Docker with Nginx + Gunicorn + PostgreSQL
+- [x] local file storage for media (no cloud dependency)
+- [ ] enable HTTPS (add SSL cert + update nginx.conf)
+- [ ] configure CSRF/CORS if needed for cross-origin
+
+### Docker deployment:
+```bash
+# build and start all services
+docker compose up -d --build
+
+# services: postgres:16-alpine, django+gunicorn, nginx:alpine
+# app available at http://localhost or your server IP
+```
 
 ---
 
@@ -816,7 +827,7 @@ def post_create(request):
 1. **EngineersEcho (orchestrator)**
    - global settings
    - main URL routing
-   - production configs
+   - production configs (PostgreSQL, WhiteNoise, environment variables)
 
 2. **blog (app)**
    - blog posts
@@ -836,6 +847,22 @@ def post_create(request):
 - **signals** - automatic actions (create profile on user creation)
 - **templates** - shared base templates
 - **middleware** - adds `request.user` for all apps
+
+### deployment architecture:
+
+```
+Client (Browser)
+    ↓
+Nginx (port 80) ──→ static files + media files
+    ↓ (proxy)
+Gunicorn (port 8000)
+    ↓
+Django App
+    ↓
+PostgreSQL (port 5432, Docker volume)
+    ↓
+Local Filesystem (media_data Docker volume)
+```
 
 ### key principles:
 

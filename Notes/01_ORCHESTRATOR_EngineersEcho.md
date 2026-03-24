@@ -63,39 +63,32 @@ __version__ = '1.0.0'
 
 #### a) SECRET_KEY
 ```python
-SECRET_KEY = 'django-insecure-w4umm)1e=jf5j&8f&hc@sjv&=2r68&ij992b*tp=c_4sn$1k^r'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-w4umm)1e=jf5j&8f&hc@sjv&=2r68&ij992b*tp=c_4sn$1k^r')
 ```
 - **what:** cryptographic key for security features
 - **why:** signs sessions, CSRF tokens, password resets
-- **issue:** yours is hardcoded (bad for production)
-- **better approach:**
-```python
-SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-for-dev')
-```
+- reads from `SECRET_KEY` environment variable in production
+- falls back to hardcoded key for local development only
+- generate a secure key: `python -c "import secrets; print(secrets.token_urlsafe(50))"`
 
 #### b) DEBUG
 ```python
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 ```
 - **what:** enables detailed error pages
 - **why:** useful for development
-- **issue:** shows sensitive info in production
-- **production:**
-```python
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-```
+- reads from `DEBUG` environment variable
+- defaults to `False` for production safety
+- set `DEBUG=True` in `.env` for local development
 
 #### c) ALLOWED_HOSTS
 ```python
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '34.14.195.121,localhost,127.0.0.1').split(',')
 ```
 - **what:** which domains can access your app
 - **why:** security - prevents host header attacks
-- **issue:** `['*']` allows anyone (bad for production)
-- **production:**
-```python
-ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com']
-```
+- reads from `ALLOWED_HOSTS` environment variable (comma-separated)
+- defaults to the production server IP and localhost
 
 #### d) INSTALLED_APPS
 ```python
@@ -114,7 +107,6 @@ INSTALLED_APPS = [
     # third-party
     'crispy_forms',
     'crispy_bootstrap5',
-    'storages',
 ]
 ```
 - **what:** list of all Django apps/plugins to use
@@ -137,13 +129,13 @@ INSTALLED_APPS = [
 ```python
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # must be right after SecurityMiddleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 ```
 - **what:** request/response processors (like Spring interceptors)
@@ -180,13 +172,19 @@ MIDDLEWARE = [
 ```python
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB', 'engineersecho'),
+        'USER': os.environ.get('POSTGRES_USER', 'engineersecho'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'engineersecho_password'),
+        'HOST': os.environ.get('POSTGRES_HOST', 'db'),
+        'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
 ```
-- **what:** database configuration
-- **why:** Django ORM needs to know where to store data
+- **what:** database configuration (PostgreSQL in production)
+- **why:** PostgreSQL is more reliable and scalable than SQLite
+- all credentials read from environment variables
+- `HOST` defaults to `db` (Docker Compose service name)
 
 **PostgreSQL example:**
 ```python
@@ -234,22 +232,26 @@ DATABASES = {
 ```python
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",  # local file storage
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",  # compressed static
+    },
+}
 ```
 - **STATIC_URL:** URL prefix for static files (CSS/JS)
 - **STATIC_ROOT:** where `collectstatic` puts files for production
 - **MEDIA_URL:** URL prefix for user uploads
-- **MEDIA_ROOT:** where user uploads are stored
-
-**production with S3:**
-```python
-# already in your settings
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = "engineersecho"
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-```
+- **MEDIA_ROOT:** where user uploads are stored locally
+- **STORAGES:** configures file storage backends
+  - `default` - uses local filesystem for media uploads (no cloud dependency)
+  - `staticfiles` - uses WhiteNoise with compression for static assets
 
 #### h) EMAIL
 ```python

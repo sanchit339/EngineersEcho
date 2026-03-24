@@ -260,9 +260,6 @@ python manage.py runserver 0.0.0.0:8000
 # image handling
 pip install Pillow
 
-# AWS S3 storage
-pip install boto3 django-storages
-
 # forms styling
 pip install django-crispy-forms crispy-bootstrap5
 
@@ -275,8 +272,11 @@ pip install gunicorn
 # static files in production
 pip install whitenoise
 
+# PostgreSQL adapter
+pip install psycopg2-binary
+
 # all at once:
-pip install Pillow boto3 django-storages django-crispy-forms crispy-bootstrap5 python-dotenv gunicorn whitenoise
+pip install Pillow django-crispy-forms crispy-bootstrap5 python-dotenv gunicorn whitenoise psycopg2-binary
 ```
 
 ### step 14: freeze dependencies
@@ -613,7 +613,7 @@ python manage.py startapp blog
 python manage.py startapp users
 
 # 5. install dependencies
-pip install Pillow boto3 django-storages django-crispy-forms crispy-bootstrap5 python-dotenv gunicorn whitenoise
+pip install Pillow django-crispy-forms crispy-bootstrap5 python-dotenv gunicorn whitenoise psycopg2-binary
 
 # 6. edit settings.py, add apps to INSTALLED_APPS
 
@@ -647,7 +647,44 @@ git push -u origin main
 
 ## deployment commands
 
-### production setup
+### production setup (Docker)
+```bash
+# build and start all services
+docker compose up -d --build
+
+# services:
+#   db    - PostgreSQL 16 (port 5432)
+#   web   - Django + Gunicorn (port 8000 internal)
+#   nginx - Nginx reverse proxy (port 80)
+
+# view container status
+docker compose ps
+
+# view logs
+docker compose logs -f web    # Django app logs
+docker compose logs -f nginx  # Nginx logs
+docker compose logs -f db     # PostgreSQL logs
+
+# restart services
+docker compose restart
+
+# stop all services
+docker compose down
+
+# rebuild after code changes
+docker compose up -d --build
+
+# run Django commands inside container
+docker compose exec web python manage.py <command>
+
+# examples:
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py createsuperuser
+docker compose exec web python manage.py shell
+docker compose exec web python manage.py collectstatic
+```
+
+### production setup (bare metal)
 ```bash
 # collect static files
 python manage.py collectstatic --no-input
@@ -905,6 +942,16 @@ python manage.py check --deploy   # deployment check
 gunicorn EngineersEcho.wsgi:application  # run with Gunicorn
 ```
 
+### Docker
+```bash
+docker compose up -d --build      # build and start
+docker compose down               # stop all services
+docker compose ps                 # check status
+docker compose logs -f            # view all logs
+docker compose exec web python manage.py <cmd>  # run Django commands
+docker compose exec web python manage.py shell  # Django shell
+```
+
 ---
 
 ## troubleshooting commands
@@ -942,6 +989,11 @@ kill -9 <PID>
 
 # or use different port
 python manage.py runserver 8080
+
+# for Docker, check if host port is in use:
+docker compose ps
+# stop conflicting containers:
+docker compose down
 ```
 
 **"CSRF verification failed"**
