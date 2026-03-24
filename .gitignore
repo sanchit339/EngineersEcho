@@ -159,6 +159,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+# Media uploads (stored locally in production)
+media/
+staticfiles/
+
 # Personal scratch notes
 Shit.md
 *_SCRATCH.md
